@@ -1,3 +1,7 @@
+package ru.nsu.ccfit.trubitsyna;
+
+import ru.nsu.ccfit.trubitsyna.view.WindowController;
+
 public class Main {
 
 

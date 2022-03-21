@@ -1,11 +1,12 @@
+package ru.nsu.ccfit.trubitsyna.view;
+
+import ru.nsu.ccfit.trubitsyna.filters.IFilter;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 
 public class ImagePanel extends JPanel  implements MouseListener{
     private final static int DEFAULT_WIDTH = 640;
@@ -30,15 +31,17 @@ public class ImagePanel extends JPanel  implements MouseListener{
 
     public void setImage(BufferedImage image) {
         originImage = image;
-        processedImage = image;
+        var cm = image.getColorModel();
+        var raster =  image.copyData(null);
+        processedImage = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
         width = image.getWidth();
         height = image.getHeight();
         setPreferredSize(new Dimension(width, height));
         repaint();
     }
 
-    public void changeImage(IFilter filter) {
-        filter.filteredImage(processedImage);
+    public void changeImage(IFilter filter, double... params) {
+        filter.filteredImage(originImage, processedImage, params);
         repaint();
     }
 
@@ -60,6 +63,9 @@ public class ImagePanel extends JPanel  implements MouseListener{
 
         var k = processedImage.getGraphics();
         g.drawImage(processedImage, DEFAULT_IDENT, DEFAULT_IDENT, this);
+
+//        var k1  = originImage.getGraphics();
+//        g.drawImage(originImage, originImage.getWidth(), DEFAULT_IDENT, this);
     }
 
     @Override

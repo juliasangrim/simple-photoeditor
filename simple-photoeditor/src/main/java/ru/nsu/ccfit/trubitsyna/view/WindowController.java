@@ -1,3 +1,9 @@
+package ru.nsu.ccfit.trubitsyna.view;
+
+import ru.nsu.ccfit.trubitsyna.ToolStatus;
+import ru.nsu.ccfit.trubitsyna.dialogs.GammaDialog;
+import ru.nsu.ccfit.trubitsyna.filters.*;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +17,8 @@ import java.util.HashMap;
 public class WindowController extends View {
 
     private HashMap<ToolStatus, IFilter> tools = new HashMap<>();
+
+    private GammaDialog gammaDialog = new GammaDialog();
 
     public WindowController() {
         super();
@@ -26,6 +34,12 @@ public class WindowController extends View {
     private void createTools() {
         BlackWhiteFilter bwFilter = new BlackWhiteFilter();
         tools.put(ToolStatus.BLACK_WHITE, bwFilter);
+        EmbossingFilter eFilter = new EmbossingFilter();
+        tools.put(ToolStatus.EMBOSSING, eFilter);
+        InversionFilter iFilter = new InversionFilter();
+        tools.put(ToolStatus.INVERSION, iFilter);
+        GammaCorrection gFilter = new GammaCorrection();
+        tools.put(ToolStatus.GAMMA, gFilter);
     }
 
 
@@ -42,7 +56,11 @@ public class WindowController extends View {
 
         addSubMenu("Filter", KeyEvent.VK_T);
         addMenuButton("Filter/Black&White...", "Makes the image black and white", KeyEvent.VK_L, "", "onBlackAndWhite");
-//        addToolBarButton("Tools/Line...");
+        addMenuButton("Filter/Embossing...", "Image embossing", KeyEvent.VK_L, "", "onEmbossing");
+        addMenuButton("Filter/Inversion...", "Inversion image", KeyEvent.VK_L, "", "onInversion");
+        addMenuButton("Filter/Gamma Correction...", "Gamma Correction", KeyEvent.VK_L, "", "onGamma");
+
+        //        addToolBarButton("Tools/Line...");
 //        addMenuButton("Tools/Fill...", "Fill area", KeyEvent.VK_F, "bucket.png", "onFill");
 //        addToolBarButton("Tools/Fill...");
 //        addMenuButton("Tools/Polygon Stamp...", "Draw polygon", KeyEvent.VK_P, "polygon.png", "onPolygon");
@@ -98,15 +116,27 @@ public class WindowController extends View {
     }
 
 
-    public void onFill(ActionEvent e) {
+    public void onEmbossing(ActionEvent e) {
 
+        imagePanel.changeImage(tools.get(ToolStatus.EMBOSSING));
     }
-    public void onEraser(ActionEvent e) {
+    public void onInversion(ActionEvent e) {
+        imagePanel.changeImage(tools.get(ToolStatus.INVERSION));
     }
 
 
-    public void onPolygon(ActionEvent e) {
-
+    public void onGamma(ActionEvent e) {
+        var clickedValue = JOptionPane.showOptionDialog(this, gammaDialog, "Change gamma parameter",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+        if (clickedValue == JOptionPane.OK_OPTION) {
+            var gamma = gammaDialog.getGamma();
+            //save old gamma for reset gamma on spinner and slider
+            gammaDialog.setOldGamma(gamma);
+            imagePanel.changeImage(tools.get(ToolStatus.GAMMA), gamma);
+        } else {
+            //reset gamma to old value
+            gammaDialog.setValueToOld();
+        }
     }
     public void onStar(ActionEvent e) {
 

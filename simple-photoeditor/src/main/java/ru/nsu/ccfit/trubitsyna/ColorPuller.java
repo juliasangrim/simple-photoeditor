@@ -1,3 +1,5 @@
+package ru.nsu.ccfit.trubitsyna;
+
 public class ColorPuller {
 
     public static int getColorRGB(int red, int green, int blue) {

@@ -1,3 +1,5 @@
+package ru.nsu.ccfit.trubitsyna.view;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
