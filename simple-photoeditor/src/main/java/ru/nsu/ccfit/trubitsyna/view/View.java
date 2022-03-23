@@ -37,9 +37,9 @@ public class View extends JFrame {
         toolbar.setFloatable(false);
         this.add(toolbar, BorderLayout.PAGE_START);
 
-        imagePanel = new ImagePanel();
 
-        scrollPane = new JScrollPane(imagePanel);
+        scrollPane = new JScrollPane();
+        imagePanel = new ImagePanel(scrollPane);
         this.add(scrollPane);
     }
 

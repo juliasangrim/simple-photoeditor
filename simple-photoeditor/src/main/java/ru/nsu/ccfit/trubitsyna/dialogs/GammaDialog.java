@@ -18,16 +18,19 @@ public class GammaDialog extends JPanel {
     private final static double MAX_VALUE_SPIN = 10;
     private final static double MIN_STEP_SPIN = 0.1;
 
-    private final static int DEVIDER = 10;
+    private final static int DIV = 10;
 
     private  JSlider gammaSlider;
     private JSpinner gammaSpinner;
 
 
-    private double oldGamma = (double) DEFAULT_VALUE / DEVIDER;
+    private double oldGamma = (double) DEFAULT_VALUE / DIV;
     @Getter
-    private double gamma = (double) DEFAULT_VALUE / DEVIDER;
+    private double gamma = (double) DEFAULT_VALUE / DIV;
 
+    public void setDefault() {
+        gamma = MIN_VALUE;
+    }
 
     public void setOldGamma(double gamma) {
         oldGamma = gamma;
@@ -46,9 +49,9 @@ public class GammaDialog extends JPanel {
         gammaSlider.setPaintTicks(true);
         gammaSlider.setPreferredSize(new Dimension(300, 95));
         Hashtable<Integer, JLabel> labels = new Hashtable<>();
-        double k = (double) MIN_STEP / DEVIDER;
-        for (int i = 0; i < MAX_VALUE / DEVIDER * 2; ++i) {
-            labels.put((int)(k * DEVIDER), new JLabel(Double.toString(k)));
+        double k = (double) MIN_VALUE / DIV;
+        for (int i = 0; i < MAX_VALUE / DIV * 2; ++i) {
+            labels.put((int)(k * DIV), new JLabel(Double.toString(k)));
             k += 1;
         }
         gammaSlider.setLabelTable(labels);
@@ -59,12 +62,12 @@ public class GammaDialog extends JPanel {
 
 
         gammaSlider.addChangeListener(e -> {
-            gammaSpinner.setValue((double)gammaSlider.getValue() / DEVIDER);
-            gamma =  (double) gammaSlider.getValue() / DEVIDER ;
+            gammaSpinner.setValue((double)gammaSlider.getValue() / DIV);
+            gamma =  (double) gammaSlider.getValue() / DIV;
 
         });
         gammaSpinner.addChangeListener(e -> {
-            gammaSlider.setValue((int)(((double) gammaSpinner.getValue()) * DEVIDER));
+            gammaSlider.setValue((int)(((double) gammaSpinner.getValue()) * DIV));
             gamma = (double) gammaSpinner.getValue() ;
         });
 

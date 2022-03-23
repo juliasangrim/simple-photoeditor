@@ -2,6 +2,8 @@ package ru.nsu.ccfit.trubitsyna.view;
 
 import ru.nsu.ccfit.trubitsyna.ToolStatus;
 import ru.nsu.ccfit.trubitsyna.dialogs.GammaDialog;
+import ru.nsu.ccfit.trubitsyna.dialogs.ContouringDialog;
+import ru.nsu.ccfit.trubitsyna.dialogs.GaussDialog;
 import ru.nsu.ccfit.trubitsyna.filters.*;
 
 import javax.imageio.ImageIO;
@@ -19,6 +21,8 @@ public class WindowController extends View {
     private HashMap<ToolStatus, IFilter> tools = new HashMap<>();
 
     private GammaDialog gammaDialog = new GammaDialog();
+    private ContouringDialog contouringDialog = new ContouringDialog();
+    private GaussDialog gaussDialog = new GaussDialog();
 
     public WindowController() {
         super();
@@ -40,6 +44,14 @@ public class WindowController extends View {
         tools.put(ToolStatus.INVERSION, iFilter);
         GammaCorrection gFilter = new GammaCorrection();
         tools.put(ToolStatus.GAMMA, gFilter);
+        ContouringFilter cFilter = new ContouringFilter();
+        tools.put(ToolStatus.CONTOUR, cFilter);
+        SharpnessFilter sFilter = new SharpnessFilter();
+        tools.put(ToolStatus.SHARP, sFilter);
+        GaussFilter gaussFilter = new GaussFilter();
+        tools.put(ToolStatus.GAUSS, gaussFilter);
+        WaterColorFilter wFilter = new WaterColorFilter();
+        tools.put(ToolStatus.WATERCOLOR, wFilter);
     }
 
 
@@ -59,6 +71,10 @@ public class WindowController extends View {
         addMenuButton("Filter/Embossing...", "Image embossing", KeyEvent.VK_L, "", "onEmbossing");
         addMenuButton("Filter/Inversion...", "Inversion image", KeyEvent.VK_L, "", "onInversion");
         addMenuButton("Filter/Gamma Correction...", "Gamma Correction", KeyEvent.VK_L, "", "onGamma");
+        addMenuButton("Filter/Contouring...", "blablabla", KeyEvent.VK_L, "", "onContouring");
+        addMenuButton("Filter/Sharpness...", "blblabla", KeyEvent.VK_L, "", "onSharpness");
+        addMenuButton("Filter/Gauss blur...", "blblabla", KeyEvent.VK_L, "", "onGauss");
+        addMenuButton("Filter/Water-coloring...", "blblabla", KeyEvent.VK_L, "", "onWaterColor");
 
         //        addToolBarButton("Tools/Line...");
 //        addMenuButton("Tools/Fill...", "Fill area", KeyEvent.VK_F, "bucket.png", "onFill");
@@ -138,22 +154,61 @@ public class WindowController extends View {
             gammaDialog.setValueToOld();
         }
     }
-    public void onStar(ActionEvent e) {
+    public void onContouring(ActionEvent e) {
+        var clickedValue = JOptionPane.showOptionDialog(this, contouringDialog, "Change visibility",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+        if (clickedValue == JOptionPane.OK_OPTION) {
+            var threshold = contouringDialog.getThreshold();
+            //save old gamma for reset gamma on spinner and slider
+            contouringDialog.setOldThreshold(threshold);
 
+            ContouringFilter contouring = (ContouringFilter) tools.get(ToolStatus.CONTOUR);
+            if (contouringDialog.getStatus() == ToolStatus.ROBERTS) {
+                contouring.setStatus(ToolStatus.ROBERTS);
+            } else {
+                contouring.setStatus(ToolStatus.SOBELS);
+            }
+            imagePanel.changeImage(contouring, threshold);
+        } else {
+            //reset gamma to old value
+            contouringDialog.setValueToOld();
+        }
     }
-    public void onColor(ActionEvent e) {
+    public void onSharpness(ActionEvent e) {
+        imagePanel.changeImage(tools.get(ToolStatus.SHARP));
     }
-    public void onChangeSize(ActionEvent e) {
+    public void onGauss(ActionEvent e) {
+        var clickedValue = JOptionPane.showOptionDialog(this, gaussDialog, "Change parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+        if (clickedValue == JOptionPane.OK_OPTION) {
+            //save old gamma for reset gamma on spinner and slider
+            var gaussCoef = gaussDialog.getGaussCoef();
+            var size = gaussDialog.getSizeKernel();
+            gaussDialog.setOldGaussCoef(gaussCoef);
+            gaussDialog.setOldSize(size);
+            imagePanel.changeImage(tools.get(ToolStatus.GAUSS), size, gaussCoef);
+        } else {
+            //reset gamma to old value
+            gammaDialog.setValueToOld();
+        }
+    }
 
+    public void onWaterColor(ActionEvent e) {
+
+        imagePanel.changeImage(tools.get(ToolStatus.WATERCOLOR));
     }
+
     public void onOpen(ActionEvent event) {
         FileDialog fd = new FileDialog (this, "Open image", FileDialog.LOAD);
         fd.setVisible(true);
+        System.out.println(fd.getFile());
         try {
             if (fd.getFile() != null) {
                 if (fd.getFile().endsWith(".bmp") || fd.getFile().endsWith(".jpg") || fd.getFile().endsWith(".gif") || fd.getFile().endsWith(".png")) {
                     imagePanel.setImage(ImageIO.read(new File(fd.getDirectory() + fd.getFile())));
                     scrollPane.revalidate();
+                    contouringDialog.setDefault();
+                    gammaDialog.setDefault();
                 } else {
                     JOptionPane.showMessageDialog(this, "Application can't open file with such exception.", "Error", JOptionPane.ERROR_MESSAGE);
                 }

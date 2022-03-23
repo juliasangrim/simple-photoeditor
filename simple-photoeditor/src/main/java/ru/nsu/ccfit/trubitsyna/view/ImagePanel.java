@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
-public class ImagePanel extends JPanel  implements MouseListener{
+public class ImagePanel extends JPanel  implements MouseMotionListener, MouseListener{
     private final static int DEFAULT_WIDTH = 640;
     private final static int DEFAULT_HEIGHT = 480;
     private final static int DEFAULT_IDENT = 4;
@@ -21,19 +21,38 @@ public class ImagePanel extends JPanel  implements MouseListener{
     private int width = DEFAULT_WIDTH;
     private int height = DEFAULT_HEIGHT;
 
+    private final JScrollPane spImage;
 
-    ImagePanel() {
-        originImage = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        processedImage = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        setPreferredSize(new Dimension(DEFAULT_WIDTH + DEFAULT_IDENT, DEFAULT_HEIGHT + DEFAULT_IDENT));
-        setImageWhite();
+    private int lastX = 0;
+    private int lastY = 0;
+
+
+
+    ImagePanel(JScrollPane scrollPane) {
+        spImage = scrollPane;
+        spImage.setWheelScrollingEnabled(false);
+        spImage.setDoubleBuffered(true);
+        spImage.setViewportView(this);
+
+        spImage.setViewportBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(DEFAULT_IDENT, DEFAULT_IDENT, DEFAULT_IDENT, DEFAULT_IDENT),
+                BorderFactory.createDashedBorder(Color.BLACK, 5, 2)));
+        spImage.revalidate();
+        addMouseListener(this);
+        addMouseMotionListener(this);
+       // setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+
+    }
+
+    public static BufferedImage copyImage(BufferedImage copiedImage) {
+        var cm = copiedImage.getColorModel();
+        var raster =  copiedImage.copyData(null);
+        return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
     }
 
     public void setImage(BufferedImage image) {
         originImage = image;
-        var cm = image.getColorModel();
-        var raster =  image.copyData(null);
-        processedImage = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+        processedImage = copyImage(originImage);
         width = image.getWidth();
         height = image.getHeight();
         setPreferredSize(new Dimension(width, height));
@@ -44,28 +63,40 @@ public class ImagePanel extends JPanel  implements MouseListener{
         filter.filteredImage(originImage, processedImage, params);
         repaint();
     }
-
-    private void setImageWhite() {
-        var imageGraphics = originImage.getGraphics();
-        imageGraphics.setColor(Color.WHITE);
-        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        imageGraphics = processedImage.getGraphics();
-        imageGraphics.setColor(Color.WHITE);
-        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        repaint();
-    }
+//
+//    private void setImageWhite() {
+//        var imageGraphics = originImage.getGraphics();
+//        imageGraphics.setColor(Color.WHITE);
+//        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//        imageGraphics = processedImage.getGraphics();
+//        imageGraphics.setColor(Color.WHITE);
+//        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//        repaint();
+//    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        originImage.createGraphics();
-        processedImage.createGraphics();
-
-        var k = processedImage.getGraphics();
-        g.drawImage(processedImage, DEFAULT_IDENT, DEFAULT_IDENT, this);
-
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.drawImage(processedImage, 0,0, this);
 //        var k1  = originImage.getGraphics();
 //        g.drawImage(originImage, originImage.getWidth(), DEFAULT_IDENT, this);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        Point scroll = spImage.getViewport().getViewPosition();
+        scroll.x += (lastX - e.getX());
+        scroll.y += (lastY - e.getY());
+
+        spImage.getHorizontalScrollBar().setValue(scroll.x);
+        spImage.getVerticalScrollBar().setValue(scroll.y);
+        spImage.repaint();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
     }
 
     @Override
@@ -75,7 +106,8 @@ public class ImagePanel extends JPanel  implements MouseListener{
 
     @Override
     public void mousePressed(MouseEvent e) {
-
+        lastX = e.getX();
+        lastY = e.getY();
     }
 
     @Override

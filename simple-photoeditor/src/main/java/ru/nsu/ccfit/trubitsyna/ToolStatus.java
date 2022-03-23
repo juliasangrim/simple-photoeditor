@@ -5,6 +5,12 @@ public enum ToolStatus {
     EMBOSSING,
     INVERSION,
     GAMMA,
+    CONTOUR,
+    SHARP,
+    GAUSS,
+    WATERCOLOR,
+    ROBERTS,
+    SOBELS,
     NOTOOL
 
 
