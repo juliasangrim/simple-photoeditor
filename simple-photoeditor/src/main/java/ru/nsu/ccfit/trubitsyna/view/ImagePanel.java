@@ -1,5 +1,7 @@
 package ru.nsu.ccfit.trubitsyna.view;
 
+import lombok.Setter;
+import ru.nsu.ccfit.trubitsyna.utils.ToolStatus;
 import ru.nsu.ccfit.trubitsyna.filters.IFilter;
 import lombok.Getter;
 
@@ -13,14 +15,20 @@ public class ImagePanel extends JPanel  implements MouseMotionListener, MouseLis
     private final static int DEFAULT_HEIGHT = 480;
     private final static int DEFAULT_IDENT = 4;
 
-    @Getter
-    private BufferedImage processedImage;
     private BufferedImage originImage;
+    private BufferedImage processedImage;
+    private BufferedImage processedImageCopy;
 
+    @Getter
+    private BufferedImage showImage;
+
+    @Setter
+    private ToolStatus status = ToolStatus.NOTOOL;
 
     private int width = DEFAULT_WIDTH;
     private int height = DEFAULT_HEIGHT;
 
+    @Getter
     private final JScrollPane spImage;
 
     private int lastX = 0;
@@ -53,6 +61,8 @@ public class ImagePanel extends JPanel  implements MouseMotionListener, MouseLis
     public void setImage(BufferedImage image) {
         originImage = image;
         processedImage = copyImage(originImage);
+        processedImageCopy = copyImage(originImage);
+        showImage = originImage;
         width = image.getWidth();
         height = image.getHeight();
         setPreferredSize(new Dimension(width, height));
@@ -60,27 +70,33 @@ public class ImagePanel extends JPanel  implements MouseMotionListener, MouseLis
     }
 
     public void changeImage(IFilter filter, double... params) {
-        filter.filteredImage(originImage, processedImage, params);
+        if (showImage != null) {
+            if (status == ToolStatus.ROTATE) {
+                if (showImage == originImage) {
+                    processedImageCopy = copyImage(originImage);
+                }
+                showImage = processedImageCopy;
+            }
+            processedImage = filter.filteredImage(showImage, params);
+            if (status != ToolStatus.ROTATE) {
+                processedImageCopy = copyImage(processedImage);
+            }
+            status = ToolStatus.NOTOOL;
+            showImage = processedImage;
         repaint();
+
+        }
     }
-//
-//    private void setImageWhite() {
-//        var imageGraphics = originImage.getGraphics();
-//        imageGraphics.setColor(Color.WHITE);
-//        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-//        imageGraphics = processedImage.getGraphics();
-//        imageGraphics.setColor(Color.WHITE);
-//        imageGraphics.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-//        repaint();
-//    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        if (originImage != null) {
+            setPreferredSize(new Dimension(showImage.getWidth(), showImage.getHeight()));
+        }
+        spImage.revalidate();
         Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(processedImage, 0,0, this);
-//        var k1  = originImage.getGraphics();
-//        g.drawImage(originImage, originImage.getWidth(), DEFAULT_IDENT, this);
+        g2d.drawImage(showImage, 0,0, this);
     }
 
     @Override
@@ -101,7 +117,13 @@ public class ImagePanel extends JPanel  implements MouseMotionListener, MouseLis
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (showImage == originImage) {
+            showImage = processedImage;
+        } else {
+            showImage = originImage;
 
+        }
+        repaint();
     }
 
     @Override

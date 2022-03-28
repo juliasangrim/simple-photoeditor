@@ -28,10 +28,6 @@ public class GammaDialog extends JPanel {
     @Getter
     private double gamma = (double) DEFAULT_VALUE / DIV;
 
-    public void setDefault() {
-        gamma = MIN_VALUE;
-    }
-
     public void setOldGamma(double gamma) {
         oldGamma = gamma;
     }
@@ -41,8 +37,9 @@ public class GammaDialog extends JPanel {
     }
 
     public GammaDialog() {
-
-        add(new Label("Gamma: "));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        JPanel additionPanel = new JPanel();
+        additionPanel.add(new Label("Gamma: "));
         gammaSlider = new JSlider(SwingConstants.HORIZONTAL, MIN_VALUE, MAX_VALUE, DEFAULT_VALUE);
         gammaSlider.setMinorTickSpacing(MIN_STEP);
         gammaSlider.setMajorTickSpacing(MAX_STEP);
@@ -71,7 +68,8 @@ public class GammaDialog extends JPanel {
             gamma = (double) gammaSpinner.getValue() ;
         });
 
-        add(gammaSlider);
-        add(gammaSpinner);
+        additionPanel.add(gammaSlider);
+        additionPanel.add(gammaSpinner);
+        add(additionPanel);
     }
 }

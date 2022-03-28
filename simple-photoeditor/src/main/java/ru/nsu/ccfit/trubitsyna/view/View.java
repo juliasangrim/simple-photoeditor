@@ -45,11 +45,7 @@ public class View extends JFrame {
 
     public JMenuItem createMenuButton(String title, String info, int keyId, String iconName, String methodName) throws NoSuchMethodException {
         JMenuItem item;
-        if (!title.contains("Open") && !title.contains("Save") && !title.contains("Palette") && !title.contains("About") && !title.contains("Change window")) {
-            item = new JRadioButtonMenuItem(title);
-        } else {
-            item = new JMenuItem(title);
-        }
+        item = new JMenuItem(title);
         item.setActionCommand(title);
         menuButtonGroup.add(item);
         item.setToolTipText(info);
@@ -156,18 +152,11 @@ public class View extends JFrame {
     }
 
     public void addToolBarButton(String menuPath) {
-        if (!menuPath.contains("Open") && !menuPath.contains("Save") && !menuPath.contains("Palette") &&
-                !menuPath.contains("Change window") && !menuPath.contains("About") && !menuPath.contains("Color")) {
-            var newButton = createToggleToolBarButton(menuPath);
-            toolbar.add(newButton);
-            buttonGroup.add(newButton);
-        } else {
             var newButton = createToolBarButton(menuPath);
             toolbar.add(newButton);
             buttonGroup.add(newButton);
-        }
 
-        if (menuPath.contains("Settings") || menuPath.contains("Eraser") || menuPath.contains("Color")) {
+        if (menuPath.contains("Fit to screen") || menuPath.contains("Water-coloring") || menuPath.contains("Save")) {
             addToolBarSeparator();
         }
     }

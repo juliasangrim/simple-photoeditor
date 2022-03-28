@@ -1,18 +1,20 @@
 package ru.nsu.ccfit.trubitsyna.filters;
 
 import lombok.Setter;
-import ru.nsu.ccfit.trubitsyna.ColorPuller;
-import ru.nsu.ccfit.trubitsyna.ToolStatus;
+import ru.nsu.ccfit.trubitsyna.utils.ColorUtils;
+import ru.nsu.ccfit.trubitsyna.utils.FilterUtils;
+import ru.nsu.ccfit.trubitsyna.utils.ToolStatus;
+import ru.nsu.ccfit.trubitsyna.view.ImagePanel;
 
 import java.awt.image.BufferedImage;
 
 public class ContouringFilter implements IFilter {
 
-    private double[][] robertsKernel1;
-    private double[][] robertsKernel2;
+    private final double[][] robertsKernel1;
+    private final double[][] robertsKernel2;
 
-    private double[][] sobelsKernel1;
-    private double[][] sobelsKernel2;
+    private final double[][] sobelsKernel1;
+    private final double[][] sobelsKernel2;
 
     private int threshold;
 
@@ -21,12 +23,12 @@ public class ContouringFilter implements IFilter {
 
     public ContouringFilter() {
         robertsKernel1 = new double[][]{
-                {1, 0},
-                {0, -1}
+                {0.5, 0},
+                {0, -0.5}
         };
         robertsKernel2 = new double[][]{
-                {0, 1},
-                {-1, 0}
+                {0, 0.5},
+                {-0.5, 0}
         };
 
         sobelsKernel1 = new double[][]{
@@ -42,14 +44,14 @@ public class ContouringFilter implements IFilter {
     }
 
 
-    private int getNewPixelColor(BufferedImage image, int currX, int currY) {
-        int resultKernelR1 = 0;
-        int resultKernelG1 = 0;
-        int resultKernelB1 = 0;
+    private int conturing(BufferedImage image, int currX, int currY) {
+        double resultKernelR1 = 0;
+        double resultKernelG1 = 0;
+        double resultKernelB1 = 0;
 
-        int resultKernelR2 = 0;
-        int resultKernelG2 = 0;
-        int resultKernelB2 = 0;
+        double resultKernelR2 = 0;
+        double resultKernelG2 = 0;
+        double resultKernelB2 = 0;
         //chose coordinates and  kernel depends on type of contouring
         int yBegin;
         int xBegin;
@@ -73,38 +75,42 @@ public class ContouringFilter implements IFilter {
         int j = 0;
         for (int y = yBegin; y <= yEnd; ++y) {
             for (int x = xBegin; x <= xEnd; ++x) {
-                if (x > 0 && y > 0 && x < image.getWidth() && y < image.getHeight()) {
-                    resultKernelR1 += ColorPuller.parseColorRed(image.getRGB(x, y)) * kernel1[i][j];
-                    resultKernelG1 += ColorPuller.parseColorGreen(image.getRGB(x, y)) * kernel1[i][j];
-                    resultKernelB1 += ColorPuller.parseColorBlue(image.getRGB(x, y)) * kernel1[i][j];
+                if (x >= 0 && y >= 0 && x < image.getWidth() && y < image.getHeight()) {
+                    resultKernelR1 += ColorUtils.parseColorRed(image.getRGB(x, y)) * kernel1[i][j];
+                    resultKernelG1 += ColorUtils.parseColorGreen(image.getRGB(x, y)) * kernel1[i][j];
+                    resultKernelB1 += ColorUtils.parseColorBlue(image.getRGB(x, y)) * kernel1[i][j];
 
-                    resultKernelR2 += ColorPuller.parseColorRed(image.getRGB(x, y)) * kernel2[i][j];
-                    resultKernelG2 += ColorPuller.parseColorGreen(image.getRGB(x, y)) * kernel2[i][j];
-                    resultKernelB2 += ColorPuller.parseColorBlue(image.getRGB(x, y)) * kernel2[i][j];
+                    resultKernelR2 += ColorUtils.parseColorRed(image.getRGB(x, y)) * kernel2[i][j];
+                    resultKernelG2 += ColorUtils.parseColorGreen(image.getRGB(x, y)) * kernel2[i][j];
+                    resultKernelB2 += ColorUtils.parseColorBlue(image.getRGB(x, y)) * kernel2[i][j];
                 }
                 j = (j + 1) % kernel1[0].length;
             }
             i = (i + 1) % kernel1[0].length;
         }
 
-        if (Math.min(Math.max(resultKernelR1 + resultKernelR2, 0), 255) > threshold &&
-                Math.min(Math.max(resultKernelG1 + resultKernelG2, 0), 255) > threshold &&
-                Math.min(Math.max(resultKernelB1 + resultKernelB2, 0), 255) > threshold) {
-            return ColorPuller.getColorRGB(255, 255, 255);
+        double resultR = Math.abs(resultKernelR1) + Math.abs(resultKernelR2);
+        double resultG = Math.abs(resultKernelG1) + Math.abs(resultKernelG2);
+        double resultB = Math.abs(resultKernelB1) + Math.abs(resultKernelB2);
+
+        if (FilterUtils.roundColor(resultR) > threshold &&
+                FilterUtils.roundColor(resultG) > threshold &&
+                FilterUtils.roundColor(resultB) > threshold) {
+            return ColorUtils.getColorRGB(255, 255, 255);
         } else {
-            return ColorPuller.getColorRGB(0, 0, 0);
+            return ColorUtils.getColorRGB(0, 0, 0);
         }
     }
 
     @Override
-    public BufferedImage filteredImage(BufferedImage oldImage, BufferedImage newImage, double... params) {
+    public BufferedImage filteredImage(BufferedImage oldImage, double... params) {
+        BufferedImage newImage = ImagePanel.copyImage(oldImage);
         threshold = (int) params[0];
         for (int y = 0; y < oldImage.getHeight(); ++y) {
             for (int x = 0; x < oldImage.getWidth(); ++x) {
-
-                newImage.setRGB(x, y, getNewPixelColor(oldImage, x, y));
+                newImage.setRGB(x, y, conturing(oldImage, x, y));
             }
         }
-        return null;
+        return newImage;
     }
 }

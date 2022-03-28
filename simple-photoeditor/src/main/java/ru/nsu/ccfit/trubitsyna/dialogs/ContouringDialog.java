@@ -2,7 +2,7 @@ package ru.nsu.ccfit.trubitsyna.dialogs;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.nsu.ccfit.trubitsyna.ToolStatus;
+import ru.nsu.ccfit.trubitsyna.utils.ToolStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,41 +21,44 @@ public class ContouringDialog extends JPanel{
     private final static double MAX_VALUE_SPIN = 10.0;
     private final static double MIN_STEP_SPIN = 0.5;
 
-    private JSlider contouringSlider;
-    private JSpinner contouringSpinner;
+    private final JSlider contouringSlider;
+    private final JSpinner contouringSpinner;
+    JRadioButton rButton;
+    JRadioButton sButton;
 
 
     @Setter
-    private int oldThreshold;
+    private int oldThreshold = MIN_VALUE;
     @Getter
     private int threshold = MIN_VALUE;
+
+    @Setter
+    private ToolStatus oldStatus = ToolStatus.ROBERTS;
+
     @Getter
     private ToolStatus status = ToolStatus.ROBERTS;
 
 
-    public void setDefault() {
-        threshold = MIN_VALUE;
-        status = ToolStatus.ROBERTS;
-    }
-
     public void setValueToOld() {
-        contouringSpinner.setValue((double)(oldThreshold - MIN_VALUE) / DIV);
+        if (oldStatus == ToolStatus.ROBERTS) {
+            rButton.setSelected(true);
+        } else sButton.setSelected(true);
+        contouringSpinner.setValue((double)(oldThreshold / DIV));
     }
 
     public ContouringDialog() {
-
-        add(new Label("Choose the visibility of borders: "));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        add(new Label("Choose bound: "));
         contouringSlider = new JSlider(SwingConstants.HORIZONTAL, MIN_VALUE, MAX_VALUE, DEFAULT_VALUE);
         contouringSlider.setMinorTickSpacing(MIN_STEP);
         contouringSlider.setMajorTickSpacing(MAX_STEP);
         contouringSlider.setSnapToTicks(true);
         contouringSlider.setPaintTicks(true);
-        contouringSlider.setPreferredSize(new Dimension(200, 95));
+        contouringSlider.setPreferredSize(new Dimension(200, 80));
         Hashtable<Integer, JLabel> labels = new Hashtable<>();
         int k = 1;
         for (int i = 0; i <= (MAX_VALUE - MIN_VALUE) / DIV; ++i) {
             labels.put(k * MAX_STEP, new JLabel(String.valueOf(k)));
-            System.out.println(k);
             k += MAX_STEP / DIV;
         }
         contouringSlider.setLabelTable(labels);
@@ -73,17 +76,17 @@ public class ContouringDialog extends JPanel{
         contouringSpinner.addChangeListener(e -> {
             contouringSlider.setValue((int)((double) contouringSpinner.getValue() * MAX_STEP));
             threshold = (int)((double) contouringSpinner.getValue() * MAX_STEP) ;
-            System.out.println(threshold);
         });
-
-        add(contouringSlider);
-        add(contouringSpinner);
+        JPanel additionPanel = new JPanel();
+        additionPanel.add(contouringSlider);
+        additionPanel.add(contouringSpinner);
+        add(additionPanel);
         createButtons();
     }
 
     private void createButtons() {
-        JRadioButton rButton = new JRadioButton("Roberts operator");
-        JRadioButton sButton = new JRadioButton("Sobels operator");
+        rButton = new JRadioButton("Roberts operator");
+        sButton = new JRadioButton("Sobel operator");
         ButtonGroup group = new ButtonGroup();
         group.add(rButton);
         group.add(sButton);

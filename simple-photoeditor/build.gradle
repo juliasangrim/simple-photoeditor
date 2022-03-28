@@ -5,6 +5,17 @@ plugins {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
+
+jar {
+    manifest {
+        attributes "Main-Class": "ru.nsu.ccfit.trubitsyna.main.InitMainWindow"
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 repositories {
     mavenCentral()
 }

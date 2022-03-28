@@ -34,35 +34,34 @@ public class GaussDialog extends JPanel{
     private double oldGaussCoef = (double) DEFAULT_VALUE / DIV;
     @Getter
     private double gaussCoef = (double) DEFAULT_VALUE / DIV;
+
+    private int oldSizeKernel = MIN_VALUE_SIZE;
     @Getter
     private int sizeKernel = MIN_VALUE_SIZE;
-
-    public void setDefault() {
-        gaussCoef = MIN_VALUE;
-        sizeKernel = MIN_VALUE_SIZE;
-    }
 
     public void setOldGaussCoef(double gaussCoef) {
         oldGaussCoef = gaussCoef;
     }
 
     public void setOldSize(int size) {
-        sizeKernel = size;
+        oldSizeKernel = size;
     }
 
     public void setValueToOld() {
         gaussSpinner.setValue(oldGaussCoef);
-
+        sizeSpinner.setValue(oldSizeKernel);
     }
 
     public GaussDialog() {
-        add(new Label("Chose sigma value: "));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        JPanel additionPanel = new JPanel();
+        additionPanel.add(new Label("Chose sigma value: "));
         gaussSlider = new JSlider(SwingConstants.HORIZONTAL, MIN_VALUE, MAX_VALUE, DEFAULT_VALUE);
         gaussSlider.setMinorTickSpacing(MIN_STEP);
         gaussSlider.setMajorTickSpacing(MAX_STEP);
         gaussSlider.setSnapToTicks(true);
         gaussSlider.setPaintTicks(true);
-        gaussSlider.setPreferredSize(new Dimension(500, 300));
+        gaussSlider.setPreferredSize(new Dimension(225, 100));
 
         Hashtable<Integer, JLabel> labels = new Hashtable<>();
         double k = (double) MIN_VALUE / DIV;
@@ -84,11 +83,12 @@ public class GaussDialog extends JPanel{
             gaussCoef = (double) gaussSpinner.getValue() ;
         });
 
-        add(gaussSlider);
-        add(gaussSpinner);
+        additionPanel.add(gaussSlider);
+        additionPanel.add(gaussSpinner);
+        add(additionPanel);
 
-
-        add(new Label("Chose kernel size value: "), BoxLayout.PAGE_AXIS);
+        additionPanel = new JPanel();
+        additionPanel.add(new Label("Chose kernel size value: "));
         sizeSlider = new JSlider(SwingConstants.HORIZONTAL, MIN_VALUE_SIZE, MAX_VALUE_SIZE, DEFAULT_VALUE_SIZE);
         sizeSlider.setMinorTickSpacing(MIN_STEP_SIZE);
         sizeSlider.setMajorTickSpacing(MAX_STEP_SIZE);
@@ -107,8 +107,9 @@ public class GaussDialog extends JPanel{
             sizeKernel = (int) sizeSpinner.getValue();
         });
 
-        add(sizeSlider);
-        add(sizeSpinner);
+        additionPanel.add(sizeSlider);
+        additionPanel.add(sizeSpinner);
+        add(additionPanel);
 
     }
 }
